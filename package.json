@@ -1,6 +1,6 @@
 {
   "name": "hajimi-wifi",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,10 +11,17 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
-  "dependencies": { "qrcode": "1.5.4", "jsqr": "1.4.0", "@zxing/browser": "0.2.1" },
+  "dependencies": {
+    "qrcode": "1.5.4",
+    "jsqr": "1.4.0",
+    "@zxing/browser": "0.2.1"
+  },
   "devDependencies": {
-    "vite": "8.3.5", "typescript": "7.0.2", "vitest": "5.0.5",
+    "vite": "8.3.5",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5",
     "@playwright/test": "1.64.1",
-    "@types/qrcode": "1.5.6", "@types/node": "24.10.1"
+    "@types/qrcode": "1.5.6",
+    "@types/node": "24.10.1"
   }
 }
