@@ -44,6 +44,7 @@ async function loadDefault() {
     if (token !== imageRevision) { bitmap.close(); return; }
     invalidate(); cat?.close(); cat = bitmap; crop = { x: .5, y: .5, zoom: 1 }; drawCrop();
     el('cat-name').textContent = 'Tom，今天值班'; el('image-error').textContent = '';
+    el<HTMLDetailsElement>('crop-options').open = false;
   } catch { if (token === imageRevision) el('image-error').textContent = '默认 Tom 暂时没有加载成功，可上传你的猫或点击恢复默认重试。'; }
   finally { if (token === imageRevision) { imageLoading = false; generateButton.disabled = busy || !cat; } }
 }
@@ -72,6 +73,7 @@ el<HTMLInputElement>('upload').addEventListener('change', async event => {
     if (token !== imageRevision) { bitmap.close(); return; }
     invalidate(); cat?.close(); cat = bitmap; crop = { x: .5, y: .5, zoom: 1 }; drawCrop();
     el('cat-name').textContent = '你家的猫，来值班'; el('image-error').textContent = '';
+    el<HTMLDetailsElement>('crop-options').open = true;
   } catch (error) { if (token === imageRevision) el('image-error').textContent = error instanceof Error ? error.message : '照片读取失败。'; }
   finally { if (token === imageRevision) { imageLoading = false; generateButton.disabled = busy || !cat; } }
 });

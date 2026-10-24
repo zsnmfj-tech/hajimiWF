@@ -20,11 +20,20 @@ test('default and upload flows, stale state, export, privacy, responsive layout'
   await page.locator('#password').fill('different123'); await expect(page.locator('#result-actions')).toBeHidden();
   await page.locator('#upload').setInputFiles('tests/fixtures/black.png');
   await expect(page.locator('#cat-name')).toContainText('你家的猫');
+  await expect(page.locator('#crop-options')).toHaveAttribute('open', '');
   await page.locator('#generate').click(); await expect(page.locator('#status')).toContainText('图片校验通过');
   await page.setViewportSize({ width: 375, height: 900 });
   await page.screenshot({ path: `output/mobile-${info.project.name}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
+});
+test('photo rendering preserves detail while protecting QR patterns and decoding', async ({page}) => {
+  const rows = await page.evaluate(async () => { const path='/hajimiWF/tests/harness.ts'; return (await import(/* @vite-ignore */ path)).photoDetail(); });
+  for (const row of rows) {
+    expect(row.errorRatio, row.name).toBeLessThan(.65);
+    expect(row.protectedPixels, row.name).toBe(true);
+    expect(row.decodes, row.name).toBe(true);
+  }
 });
 test('image errors keep prior image; open network clears password; invalid form and stale async are safe', async ({page}) => {
   await page.locator('#generate').click(); await expect(page.locator('#ssid-error')).not.toBeEmpty();

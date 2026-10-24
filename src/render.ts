@@ -1,19 +1,38 @@
 import { canvas } from './image';
 import { makeQr } from './qr';
-export const CORE_SIZES = [0.60, 0.75, 0.90, 1] as const;
+export const CORE_SIZES = [0.46, 0.60, 0.90, 1] as const;
 export function drawQr(payload: string, cat: HTMLCanvasElement, level: number) {
   const matrix = makeQr(payload);
   const unit = Math.ceil(1024 / (matrix.size + 8));
   const output = canvas((matrix.size + 8) * unit); const ctx = output.getContext('2d')!;
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, output.width, output.height);
   if (level < 3) ctx.drawImage(cat, 4 * unit, 4 * unit, matrix.size * unit, matrix.size * unit);
+  const photo = level === 0 ? ctx.getImageData(0, 0, output.width, output.height) : undefined;
   for (let row = 0; row < matrix.size; row++) for (let col = 0; col < matrix.size; col++) {
     const at = row * matrix.size + col;
     const core = matrix.reserved[at] ? unit : Math.ceil(unit * CORE_SIZES[level]);
     const inset = Math.floor((unit - core) / 2);
+    if (photo) {
+      // Retain the photo's hue and texture. Correct only the luminance needed
+      // at module centers; functional patterns still use solid black/white.
+      for (let y = 0; y < core; y++) for (let x = 0; x < core; x++) {
+        const offset = (((row + 4) * unit + inset + y) * output.width + (col + 4) * unit + inset + x) * 4;
+        const pixels = photo.data;
+        const light = .299 * pixels[offset] + .587 * pixels[offset + 1] + .114 * pixels[offset + 2];
+        const target = matrix.reserved[at] ? (matrix.bits[at] ? 0 : 255)
+          : matrix.bits[at] ? Math.min(light, 55) : Math.max(light, 200);
+        for (let channel = 0; channel < 3; channel++) {
+          pixels[offset + channel] = target < light
+            ? pixels[offset + channel] * target / Math.max(1, light)
+            : 255 - (255 - pixels[offset + channel]) * (255 - target) / Math.max(1, 255 - light);
+        }
+      }
+      continue;
+    }
     ctx.fillStyle = matrix.bits[at] ? '#000' : '#fff';
     ctx.fillRect((col + 4) * unit + inset, (row + 4) * unit + inset, core, core);
   }
+  if (photo) ctx.putImageData(photo, 0, 0);
   return output;
 }
 export function drawCard(qr: HTMLCanvasElement, cat: HTMLCanvasElement, ssid: string, level: number) {
